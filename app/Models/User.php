@@ -6,11 +6,19 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasApiTokens;
+
+    /**
+     * User role constants
+     */
+    const ROLE_ADMIN = 'admin';
+    const ROLE_DONOR = 'donor';
+    const ROLE_BENEFICIARY = 'beneficiary';
 
     /**
      * The attributes that are mass assignable.
@@ -21,6 +29,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
     ];
 
     /**
@@ -44,5 +53,37 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * Check if user is admin
+     */
+    public function isAdmin(): bool
+    {
+        return $this->role === self::ROLE_ADMIN;
+    }
+
+    /**
+     * Check if user is donor
+     */
+    public function isDonor(): bool
+    {
+        return $this->role === self::ROLE_DONOR;
+    }
+
+    /**
+     * Check if user is beneficiary
+     */
+    public function isBeneficiary(): bool
+    {
+        return $this->role === self::ROLE_BENEFICIARY;
+    }
+
+    /**
+     * Check if user has specific role
+     */
+    public function hasRole(string $role): bool
+    {
+        return $this->role === $role;
     }
 }
