@@ -33,4 +33,3 @@ hooks:
     - location: scripts/restart_services.sh
       timeout: 60
       runas: root
-ubuntu@ip-198-18-8-63:/var/www/html$
