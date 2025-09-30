@@ -1,0 +1,36 @@
+version: 0.0
+os: linux
+files:
+  - source: /
+    destination: /var/www/html
+permissions:
+  - object: /var/www/html
+    owner: www-data
+    group: www-data
+    mode: 775
+    type:
+      - directory
+      - file
+
+hooks:
+  BeforeInstall:
+    - location: scripts/backup_env.sh
+      timeout: 60
+      runas: root
+    - location: scripts/clean_up.sh
+      timeout: 60
+      runas: root
+
+  AfterInstall:
+    - location: scripts/install_dependencies.sh
+      timeout: 300
+      runas: root
+    - location: scripts/restore_env.sh
+      timeout: 60
+      runas: root
+
+  ApplicationStart:
+    - location: scripts/restart_services.sh
+      timeout: 60
+      runas: root
+ubuntu@ip-198-18-8-63:/var/www/html$

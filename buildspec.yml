@@ -1,0 +1,33 @@
+version: 0.2
+
+phases:
+  install:
+    commands:
+      - echo "Installing Composer..."
+      - curl -sS https://getcomposer.org/installer | php
+      - mv composer.phar /usr/local/bin/composer
+
+  pre_build:
+    commands:
+      - echo "Pre-build phase started."
+      - ls -la
+
+  build:
+    commands:
+      - echo "Installing Laravel dependencies..."
+      - composer install --no-dev --optimize-autoloader
+      - echo "Setting up environment file..."
+      - cp .env.example .env
+      - php artisan key:generate
+      - echo "Caching config and routes..."
+      - php artisan config:cache
+      - php artisan route:cache
+      - echo "Skipping view:cache (API-only app or no Blade templates)."
+
+  post_build:
+    commands:
+      - echo "Build completed successfully."
+
+artifacts:
+  files:
+    - '**/*'
