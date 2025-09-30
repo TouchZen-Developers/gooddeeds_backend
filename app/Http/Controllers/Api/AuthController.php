@@ -11,7 +11,7 @@ use Illuminate\Validation\ValidationException;
 class AuthController extends Controller
 {
     /**
-     * Admin login
+     * User login (for all user types: admin, donor, beneficiary)
      */
     public function login(Request $request)
     {
@@ -29,16 +29,9 @@ class AuthController extends Controller
             ], 401);
         }
 
-        // Check if user is admin
-        if (!$user->isAdmin()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Unauthorized. Admin access only.',
-            ], 403);
-        }
-
-        // Create token
-        $token = $user->createToken('admin-token')->plainTextToken;
+        // Create token based on user role
+        $tokenName = $user->role . '-token';
+        $token = $user->createToken($tokenName)->plainTextToken;
 
         return response()->json([
             'success' => true,
