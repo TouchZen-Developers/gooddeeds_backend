@@ -13,9 +13,10 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Call AdminSeeder to create default admin user
+        // Call seeders to create default data
         $this->call([
             AdminSeeder::class,
+            CategorySeeder::class,
         ]);
     }
 }
