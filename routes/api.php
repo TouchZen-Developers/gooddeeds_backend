@@ -2,11 +2,19 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\ForgotPasswordController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 // Public Authentication Routes (for all user types)
 Route::post('/login', [AuthController::class, 'login']);
+
+// Forgot Password Routes (public)
+Route::prefix('forgot-password')->group(function () {
+    Route::post('/send-otp', [ForgotPasswordController::class, 'sendOtp']);
+    Route::post('/verify-otp', [ForgotPasswordController::class, 'verifyOtp']);
+    Route::post('/reset', [ForgotPasswordController::class, 'resetPassword']);
+});
 
 // Protected routes (requires authentication)
 Route::middleware('auth:sanctum')->group(function () {
