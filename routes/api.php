@@ -1,13 +1,23 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\BeneficiarySignupController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\ForgotPasswordController;
+use App\Http\Controllers\Api\SignupController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 // Public Authentication Routes (for all user types)
 Route::post('/login', [AuthController::class, 'login']);
+
+// Signup Routes (public)
+Route::post('/auth/signup', [SignupController::class, 'signup']);
+Route::post('/auth/signup/verify-otp', [SignupController::class, 'verifyOtp']);
+
+// Beneficiary Signup Routes (public) - verify uses unified controller
+Route::post('/auth/beneficiaries/signup', [BeneficiarySignupController::class, 'signup']);
+Route::post('/auth/beneficiaries/verify-otp', [SignupController::class, 'verifyOtp']);
 
 // Forgot Password Routes (public)
 Route::prefix('forgot-password')->group(function () {
