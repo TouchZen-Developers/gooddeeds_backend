@@ -13,32 +13,25 @@ use Illuminate\Support\Str;
 class OtpService
 {
     /**
-     * Generate a 6-digit OTP
+     * Generate a 4-digit OTP
      */
     public function generateOtp(): string
     {
-        return str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+        return str_pad(random_int(0, 9999), 4, '0', STR_PAD_LEFT);
     }
 
     /**
-     * Send OTP to admin email
+     * Send OTP for password reset (supports all roles)
      */
     public function sendOtp(string $email): array
     {
-        // Check if user exists and is admin
+        // Check if user exists
         $user = User::where('email', $email)->first();
         
         if (!$user) {
             return [
                 'success' => false,
                 'message' => 'User not found with this email address.',
-            ];
-        }
-
-        if (!$user->isAdmin()) {
-            return [
-                'success' => false,
-                'message' => 'Password reset is only available for admin users.',
             ];
         }
 

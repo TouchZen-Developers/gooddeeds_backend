@@ -23,7 +23,7 @@ class VerifyOtpRequest extends FormRequest
     {
         return [
             'email' => 'required|email|exists:users,email',
-            'otp' => 'required|string|size:6|regex:/^[0-9]{6}$/',
+            'otp' => 'required|digits:4',
         ];
     }
 
@@ -37,8 +37,7 @@ class VerifyOtpRequest extends FormRequest
             'email.email' => 'Please provide a valid email address.',
             'email.exists' => 'No account found with this email address.',
             'otp.required' => 'OTP code is required.',
-            'otp.size' => 'OTP must be exactly 6 digits.',
-            'otp.regex' => 'OTP must contain only numbers.',
+            'otp.digits' => 'OTP must be exactly 4 digits.',
         ];
     }
 }
