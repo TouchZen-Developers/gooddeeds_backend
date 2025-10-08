@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\Api\Admin\BeneficiaryManagementController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\BeneficiaryController;
 use App\Http\Controllers\Api\BeneficiarySignupController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\ForgotPasswordController;
@@ -30,12 +32,25 @@ Route::prefix('forgot-password')->group(function () {
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
+    
+    // Beneficiary Status Check (auth-protected, beneficiary only)
+    Route::get('/beneficiaries/status', [BeneficiaryController::class, 'getStatus']);
 });
 
 // Admin-only routes (requires admin role)
 Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function () {
+    // Categories
     Route::apiResource('categories', CategoryController::class);
     Route::post('categories/upload', [CategoryController::class, 'uploadIcon']);
+    
+    // Beneficiary Management
+    Route::prefix('beneficiaries')->group(function () {
+        Route::get('/', [BeneficiaryManagementController::class, 'index']);
+        Route::get('/statistics', [BeneficiaryManagementController::class, 'statistics']);
+        Route::get('/{beneficiary}', [BeneficiaryManagementController::class, 'show']);
+        Route::post('/{beneficiary}/approve', [BeneficiaryManagementController::class, 'approve']);
+        Route::post('/{beneficiary}/reject', [BeneficiaryManagementController::class, 'reject']);
+    });
 });
 
 // Public API route for testing
