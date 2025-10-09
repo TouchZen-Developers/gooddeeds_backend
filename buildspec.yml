@@ -8,33 +8,39 @@ phases:
       - apt-get install -y software-properties-common
       - add-apt-repository ppa:ondrej/php -y || echo "PPA already added or failed, continuing..."
       - apt-get update
-      - apt-get install -y php8.2-gmp php8.2-cli php8.2-common php8.2-xml php8.2-mbstring || echo "Some PHP 8.2 packages failed to install"
-      - echo "extension=gmp" >> /etc/php/8.2/cli/php.ini || echo "Failed to enable GMP in php.ini"
-      - update-alternatives --set php /usr/bin/php8.2 || echo "PHP 8.2 already default or failed to set"
-      - php -v  # Debug: Verify PHP 8.2
-      - php -m | grep gmp || echo "GMP extension not loaded"  # Debug: Check GMP (won't fail build)
-      - curl -sS https://getcomposer.org/installer | php
+      - apt-get install -y php8.2-gmp php8.2-cli php8.2-common php8.2-xml php8.2-mbstring
+      # Disable phpenv temporarily and use system PHP
+      - export PATH="/usr/bin:/usr/local/bin:$PATH"
+      - hash -r  # Clear shell hash cache
+      - which php  # Should show /usr/bin/php
+      - /usr/bin/php -v  # Verify system PHP
+      - /usr/bin/php -m | grep gmp  # Verify GMP is loaded
+      - curl -sS https://getcomposer.org/installer | /usr/bin/php
       - mv composer.phar /usr/local/bin/composer
-      - composer --version  # Verify Composer
+      - /usr/bin/php /usr/local/bin/composer --version
 
   pre_build:
     commands:
       - echo "Pre-build phase started."
       - ls -la
-      - php -v  # Verify PHP version
-      - php -m | grep gmp || echo "GMP extension not loaded - continuing anyway"
-      - php --ini  # Show loaded config files
+      - export PATH="/usr/bin:/usr/local/bin:$PATH"
+      - hash -r
+      - /usr/bin/php -v
+      - /usr/bin/php -m | grep gmp || echo "GMP not loaded"
+      - /usr/bin/php --ini
 
   build:
     commands:
       - echo "Installing Laravel dependencies..."
-      - composer install --no-dev --optimize-autoloader
+      - export PATH="/usr/bin:/usr/local/bin:$PATH"
+      - hash -r
+      - /usr/bin/php /usr/local/bin/composer install --no-dev --optimize-autoloader
       - echo "Setting up environment file..."
       - cp .env.example .env
-      - php artisan key:generate
+      - /usr/bin/php artisan key:generate
       - echo "Caching config and routes..."
-      - php artisan config:cache
-      - php artisan route:cache
+      - /usr/bin/php artisan config:cache
+      - /usr/bin/php artisan route:cache
       - echo "Skipping view:cache (API-only app or no Blade templates)."
 
   post_build:
