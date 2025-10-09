@@ -8,9 +8,10 @@ phases:
       - apt-get install -y software-properties-common
       - add-apt-repository ppa:ondrej/php -y || echo "Failed to add PPA, continuing..."
       - apt-get update
-      - apt-get install -y php8.4 php8.4-cli php8.4-gmp || echo "Failed to install PHP 8.4 or GMP"
-      - apt-get install -y php8.4-common php8.4-xml php8.4-mbstring  # Additional common extensions for Laravel
-      - php -v  # Debug: Check PHP version after install
+      - apt-get install -y php8.4 php8.4-cli php8.4-gmp php8.4-common php8.4-xml php8.4-mbstring || echo "Failed to install PHP 8.4 or GMP"
+      - update-alternatives --set php /usr/bin/php8.4 || echo "Failed to set PHP 8.4 as default"
+      - echo "extension=gmp" >> /etc/php/8.4/cli/php.ini || echo "Failed to enable GMP extension"
+      - php -v  # Debug: Check PHP version
       - php -m | grep gmp  # Debug: Check GMP extension
       - curl -sS https://getcomposer.org/installer | php
       - mv composer.phar /usr/local/bin/composer
@@ -22,6 +23,7 @@ phases:
       - ls -la
       - php -v  # Verify PHP version
       - php -m | grep gmp  # Verify GMP extension is loaded
+      - php --ini  # Debug: Check loaded PHP configuration files
 
   build:
     commands:
