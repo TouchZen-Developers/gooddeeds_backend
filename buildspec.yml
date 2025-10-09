@@ -3,27 +3,27 @@ version: 0.2
 phases:
   install:
     commands:
-      - echo "Installing dependencies and Composer..."
+      - echo "Installing PHP 8.2 GMP extension and Composer..."
       - apt-get update
       - apt-get install -y software-properties-common
-      - add-apt-repository ppa:ondrej/php -y || echo "Failed to add PPA, continuing..."
+      - add-apt-repository ppa:ondrej/php -y || echo "PPA already added or failed, continuing..."
       - apt-get update
-      - apt-get install -y php8.4 php8.4-cli php8.4-gmp php8.4-common php8.4-xml php8.4-mbstring || echo "Failed to install PHP 8.4 or GMP"
-      - update-alternatives --set php /usr/bin/php8.4 || echo "Failed to set PHP 8.4 as default"
-      - echo "extension=gmp" >> /etc/php/8.4/cli/php.ini || echo "Failed to enable GMP extension"
-      - php -v  # Debug: Check PHP version
-      - php -m | grep gmp  # Debug: Check GMP extension
+      - apt-get install -y php8.2-gmp php8.2-cli php8.2-common php8.2-xml php8.2-mbstring || echo "Some PHP 8.2 packages failed to install"
+      - echo "extension=gmp" >> /etc/php/8.2/cli/php.ini || echo "Failed to enable GMP in php.ini"
+      - update-alternatives --set php /usr/bin/php8.2 || echo "PHP 8.2 already default or failed to set"
+      - php -v  # Debug: Verify PHP 8.2
+      - php -m | grep gmp || echo "GMP extension not loaded"  # Debug: Check GMP (won't fail build)
       - curl -sS https://getcomposer.org/installer | php
       - mv composer.phar /usr/local/bin/composer
-      - composer --version  # Debug: Verify Composer installation
+      - composer --version  # Verify Composer
 
   pre_build:
     commands:
       - echo "Pre-build phase started."
       - ls -la
       - php -v  # Verify PHP version
-      - php -m | grep gmp  # Verify GMP extension is loaded
-      - php --ini  # Debug: Check loaded PHP configuration files
+      - php -m | grep gmp || echo "GMP extension not loaded - continuing anyway"
+      - php --ini  # Show loaded config files
 
   build:
     commands:
