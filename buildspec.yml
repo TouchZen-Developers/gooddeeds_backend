@@ -3,18 +3,18 @@ version: 0.2
 phases:
   install:
     commands:
-      - echo "Installing PHP 8.2 GMP extension and Composer..."
+      - echo "Installing PHP 8.2 extensions and Composer..."
       - apt-get update
       - apt-get install -y software-properties-common
       - add-apt-repository ppa:ondrej/php -y || echo "PPA already added or failed, continuing..."
       - apt-get update
-      - apt-get install -y php8.2-gmp php8.2-cli php8.2-common php8.2-xml php8.2-mbstring
+      - apt-get install -y php8.2-cli php8.2-common php8.2-xml php8.2-mbstring php8.2-gmp php8.2-curl
       # Disable phpenv temporarily and use system PHP
       - export PATH="/usr/bin:/usr/local/bin:$PATH"
       - hash -r  # Clear shell hash cache
       - which php  # Should show /usr/bin/php
       - /usr/bin/php -v  # Verify system PHP
-      - /usr/bin/php -m | grep gmp  # Verify GMP is loaded
+      - /usr/bin/php -m | grep curl || echo "cURL not loaded!"
       - curl -sS https://getcomposer.org/installer | /usr/bin/php
       - mv composer.phar /usr/local/bin/composer
       - /usr/bin/php /usr/local/bin/composer --version
@@ -26,7 +26,7 @@ phases:
       - export PATH="/usr/bin:/usr/local/bin:$PATH"
       - hash -r
       - /usr/bin/php -v
-      - /usr/bin/php -m | grep gmp || echo "GMP not loaded"
+      - /usr/bin/php -m | grep curl || echo "cURL not loaded"
       - /usr/bin/php --ini
 
   build:
