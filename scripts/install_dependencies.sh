@@ -1,4 +1,6 @@
 #!/bin/bash
+
+cd /
 cd /var/www/html
 
 echo "Ensuring required directories exist..."
