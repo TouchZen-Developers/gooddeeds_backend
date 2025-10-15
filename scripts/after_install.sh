@@ -1,5 +1,6 @@
 #!/bin/bash
 # Navigate to the application directory
+cd /
 cd /var/www/html
 
 # Ensure .env file exists (copy from a backup or create if needed)
