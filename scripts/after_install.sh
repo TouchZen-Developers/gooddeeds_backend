@@ -21,8 +21,8 @@ composer install --no-dev --optimize-autoloader
 
 cd /
 cd /var/www/html
-php artisan migrate --force
-php artisan db:seed 
+sudo -u www-data php artisan migrate --force
+sudo -u www-data php artisan db:seed
 
 # Clear and cache Laravel configurations
 php artisan config:cache
