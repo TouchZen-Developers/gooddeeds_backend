@@ -4,10 +4,10 @@ cd /
 cd /var/www/html
 
 # Ensure .env file exists (copy from a backup or create if needed)
-if [ ! -f ".env" ]; then
-    cp .env.example .env
-    php artisan key:generate
-fi
+# if [ ! -f ".env" ]; then
+#     cp .env.example .env
+#     php artisan key:generate
+# fi
 
 # Set correct permissions for Laravel directories
 chown -R www-data:www-data /var/www/html
