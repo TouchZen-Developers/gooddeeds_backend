@@ -19,6 +19,7 @@ composer install --no-dev --optimize-autoloader
 
 # Run Laravel migrations
 php artisan migrate --force
+php artisan db:seed 
 
 # Clear and cache Laravel configurations
 php artisan config:cache
