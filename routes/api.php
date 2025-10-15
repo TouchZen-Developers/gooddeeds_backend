@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\Admin\AffectedEventController;
 use App\Http\Controllers\Api\Admin\BeneficiaryManagementController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BeneficiaryController;
@@ -43,6 +44,9 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
     Route::apiResource('categories', CategoryController::class);
     Route::post('categories/upload', [CategoryController::class, 'uploadIcon']);
     
+    // Affected Events
+    Route::apiResource('affected-events', AffectedEventController::class);
+    
     // Beneficiary Management
     Route::prefix('beneficiaries')->group(function () {
         Route::get('/', [BeneficiaryManagementController::class, 'index']);
@@ -51,6 +55,16 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
         Route::post('/{beneficiary}/approve', [BeneficiaryManagementController::class, 'approve']);
         Route::post('/{beneficiary}/reject', [BeneficiaryManagementController::class, 'reject']);
     });
+});
+
+// Public API routes
+Route::get('/affected-events', function () {
+    $affectedEvents = \App\Models\AffectedEvent::active()->ordered()->get(['id', 'name']);
+    
+    return response()->json([
+        'success' => true,
+        'data' => $affectedEvents,
+    ]);
 });
 
 // Public API route for testing
