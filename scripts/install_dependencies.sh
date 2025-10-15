@@ -34,9 +34,9 @@ fi
 echo "Installing Composer dependencies..."
 sudo -u www-data composer install --no-dev --optimize-autoloader
 
-echo "Running migrations and seeders..."
-sudo -u www-data php artisan migrate --force
-sudo -u www-data php artisan db:seed
+#echo "Running migrations and seeders..."
+#sudo -u www-data php artisan migrate --force
+#sudo -u www-data php artisan db:seed
 
 echo "Clearing and caching configurations and routes..."
 sudo -u www-data php artisan cache:clear
