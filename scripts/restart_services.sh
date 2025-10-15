@@ -2,10 +2,12 @@
 
 cd /
 
+#!/bin/bash
 cd /var/www/html
-php artisan config:clear
-php artisan cache:clear
-php artisan config:cache
+
+# Rebuild caches after migrations
+sudo -u www-data php artisan config:cache
+sudo -u www-data php artisan route:cache
 
 echo "Restarting PHP-FPM and Nginx..."
 systemctl restart php8.4-fpm
