@@ -23,7 +23,7 @@ class ResetPasswordRequest extends FormRequest
     {
         return [
             'email' => 'required|email|exists:users,email',
-            'otp' => 'required|string|size:6|regex:/^[0-9]{6}$/',
+            'otp' => 'required|string|size:4|regex:/^[0-9]{4}$/',
             'password' => 'required|string|min:8|confirmed',
             'password_confirmation' => 'required|string|min:8',
         ];
@@ -39,7 +39,7 @@ class ResetPasswordRequest extends FormRequest
             'email.email' => 'Please provide a valid email address.',
             'email.exists' => 'No account found with this email address.',
             'otp.required' => 'OTP code is required.',
-            'otp.size' => 'OTP must be exactly 6 digits.',
+            'otp.size' => 'OTP must be exactly 4 digits.',
             'otp.regex' => 'OTP must contain only numbers.',
             'password.required' => 'Password is required.',
             'password.min' => 'Password must be at least 8 characters.',
