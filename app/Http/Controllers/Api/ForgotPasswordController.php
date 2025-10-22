@@ -43,13 +43,12 @@ class ForgotPasswordController extends Controller
     }
 
     /**
-     * Reset password after OTP verification
+     * Reset password using verification token
      */
     public function resetPassword(ResetPasswordRequest $request): JsonResponse
     {
-        $result = $this->otpService->resetPassword(
-            $request->email,
-            $request->otp,
+        $result = $this->otpService->resetPasswordWithToken(
+            $request->verification_token,
             $request->password
         );
 

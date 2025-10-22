@@ -85,12 +85,13 @@ class OtpService
     }
 
     /**
-     * Verify OTP
+     * Verify OTP and generate verification token
      */
     public function verifyOtp(string $email, string $otp): array
     {
         $otpRecord = Otp::where('email', $email)
             ->where('otp', $otp)
+            ->forContext('password_reset')
             ->valid()
             ->first();
 
@@ -104,33 +105,35 @@ class OtpService
         // Mark OTP as used
         $otpRecord->markAsUsed();
 
-        // Generate a temporary verification token
+        // Generate a temporary verification token (valid for 15 minutes)
         $verificationToken = Str::random(64);
+        
+        // Store verification token in cache with email
+        cache()->put(
+            'password_reset_token:' . $verificationToken,
+            $email,
+            now()->addMinutes(15)
+        );
 
-        // Store verification token (you might want to store this in cache or database)
-        // For now, we'll return it directly
         return [
             'success' => true,
-            'message' => 'OTP verified successfully.',
+            'message' => 'OTP verified successfully. Use the verification token to reset your password.',
             'verification_token' => $verificationToken,
         ];
     }
 
     /**
-     * Reset password after OTP verification
+     * Reset password using verification token
      */
-    public function resetPassword(string $email, string $otp, string $newPassword): array
+    public function resetPasswordWithToken(string $verificationToken, string $newPassword): array
     {
-        // Verify OTP again
-        $otpRecord = Otp::where('email', $email)
-            ->where('otp', $otp)
-            ->valid()
-            ->first();
+        // Retrieve email from cache using token
+        $email = cache()->get('password_reset_token:' . $verificationToken);
 
-        if (!$otpRecord) {
+        if (!$email) {
             return [
                 'success' => false,
-                'message' => 'Invalid or expired OTP.',
+                'message' => 'Invalid or expired verification token.',
             ];
         }
 
@@ -148,8 +151,8 @@ class OtpService
             'password' => bcrypt($newPassword),
         ]);
 
-        // Mark OTP as used
-        $otpRecord->markAsUsed();
+        // Remove verification token from cache
+        cache()->forget('password_reset_token:' . $verificationToken);
 
         // Clean up all OTPs for this email
         $this->cleanupExpiredOtps($email);

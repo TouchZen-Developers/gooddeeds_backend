@@ -22,8 +22,7 @@ class ResetPasswordRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => 'required|email|exists:users,email',
-            'otp' => 'required|string|size:4|regex:/^[0-9]{4}$/',
+            'verification_token' => 'required|string|size:64',
             'password' => 'required|string|min:8|confirmed',
             'password_confirmation' => 'required|string|min:8',
         ];
@@ -35,12 +34,9 @@ class ResetPasswordRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'email.required' => 'Email address is required.',
-            'email.email' => 'Please provide a valid email address.',
-            'email.exists' => 'No account found with this email address.',
-            'otp.required' => 'OTP code is required.',
-            'otp.size' => 'OTP must be exactly 4 digits.',
-            'otp.regex' => 'OTP must contain only numbers.',
+            'verification_token.required' => 'Verification token is required.',
+            'verification_token.string' => 'Verification token must be a valid string.',
+            'verification_token.size' => 'Invalid verification token format.',
             'password.required' => 'Password is required.',
             'password.min' => 'Password must be at least 8 characters.',
             'password.confirmed' => 'Password confirmation does not match.',
