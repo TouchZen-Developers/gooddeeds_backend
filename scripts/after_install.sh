@@ -18,8 +18,11 @@ chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 composer install --no-dev --optimize-autoloader
 
 # Run Laravel migrations
-php artisan migrate --force
-php artisan db:seed 
+
+cd /
+cd /var/www/html
+sudo -u www-data php artisan migrate --force
+sudo -u www-data php artisan db:seed
 
 # Clear and cache Laravel configurations
 php artisan config:cache

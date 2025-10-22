@@ -1,8 +1,10 @@
 version: 0.0
 os: linux
+
 files:
   - source: /
     destination: /var/www/html
+
 permissions:
   - object: /var/www/html
     owner: www-data
@@ -30,6 +32,9 @@ hooks:
       runas: root
 
   ApplicationStart:
+    - location: scripts/run_migrations.sh
+      timeout: 120
+      runas: root
     - location: scripts/restart_services.sh
       timeout: 60
       runas: root
