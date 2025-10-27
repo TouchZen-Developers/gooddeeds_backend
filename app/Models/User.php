@@ -34,6 +34,11 @@ class User extends Authenticatable
         'phone_number',
         'password',
         'role',
+        'google_id',
+        'apple_id',
+        'social_provider',
+        'social_avatar_url',
+        'is_profile_complete',
     ];
 
     /**
@@ -56,6 +61,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_profile_complete' => 'boolean',
         ];
     }
 
@@ -97,5 +103,37 @@ class User extends Authenticatable
     public function beneficiary(): HasOne
     {
         return $this->hasOne(Beneficiary::class);
+    }
+
+    /**
+     * Check if user signed up via social authentication
+     */
+    public function isSocialUser(): bool
+    {
+        return !is_null($this->social_provider);
+    }
+
+    /**
+     * Check if user profile is complete
+     */
+    public function isProfileComplete(): bool
+    {
+        return $this->is_profile_complete;
+    }
+
+    /**
+     * Mark user profile as complete
+     */
+    public function markProfileComplete(): void
+    {
+        $this->update(['is_profile_complete' => true]);
+    }
+
+    /**
+     * Get social provider name
+     */
+    public function getSocialProvider(): ?string
+    {
+        return $this->social_provider;
     }
 }

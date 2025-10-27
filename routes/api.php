@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\BeneficiarySignupController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\ForgotPasswordController;
 use App\Http\Controllers\Api\SignupController;
+use App\Http\Controllers\Api\SocialAuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -27,6 +28,22 @@ Route::prefix('forgot-password')->group(function () {
     Route::post('/send-otp', [ForgotPasswordController::class, 'sendOtp']);
     Route::post('/verify-otp', [ForgotPasswordController::class, 'verifyOtp']);
     Route::post('/reset', [ForgotPasswordController::class, 'resetPassword']);
+});
+
+// Social Authentication Routes (public)
+Route::prefix('auth/social')->middleware('web')->group(function () {
+    // Redirect to social provider
+    Route::get('/{provider}/redirect', [SocialAuthController::class, 'redirect'])
+        ->where('provider', 'google|apple');
+    
+    // Handle social provider callback
+    Route::get('/{provider}/callback', [SocialAuthController::class, 'callback'])
+        ->where('provider', 'google|apple');
+});
+
+// Social Authentication API Routes (requires authentication)
+Route::prefix('auth/social')->middleware(['auth:sanctum'])->group(function () {
+    Route::post('/complete-profile', [SocialAuthController::class, 'completeProfile']);
 });
 
 // Protected routes (requires authentication)

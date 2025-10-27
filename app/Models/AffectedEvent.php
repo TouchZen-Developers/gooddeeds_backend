@@ -8,11 +8,14 @@ class AffectedEvent extends Model
 {
     protected $fillable = [
         'name',
+        'image_url',
         'is_active',
+        'is_featured',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
+        'is_featured' => 'boolean',
     ];
 
     /**
@@ -24,11 +27,19 @@ class AffectedEvent extends Model
     }
 
     /**
-     * Scope to order by name
+     * Scope to get only featured events
+     */
+    public function scopeFeatured($query)
+    {
+        return $query->where('is_featured', true);
+    }
+
+    /**
+     * Scope to order by featured first, then by name
      */
     public function scopeOrdered($query)
     {
-        return $query->orderBy('name');
+        return $query->orderBy('is_featured', 'desc')->orderBy('name');
     }
 
     /**
