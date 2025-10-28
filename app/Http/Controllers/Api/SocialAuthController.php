@@ -29,7 +29,7 @@ class SocialAuthController extends Controller
     /**
      * Handle social provider callback
      */
-    public function callback(string $provider, Request $request): JsonResponse
+    public function callback(string $provider, Request $request)
     {
         $this->validateProvider($provider);
 
@@ -41,7 +41,21 @@ class SocialAuthController extends Controller
             
             // Generate token
             $token = $user->createToken('social-auth')->plainTextToken;
-            
+
+            // If frontend redirect URL is configured, redirect with token and next_step
+            $redirectBase = config('services.frontend.social_login_redirect_url');
+            if (!empty($redirectBase)) {
+                $nextStep = $user->is_profile_complete ? 'dashboard' : 'complete_profile';
+                $query = http_build_query([
+                    'token' => $token,
+                    'next_step' => $nextStep,
+                    'provider' => $provider,
+                ]);
+
+                return redirect()->away(rtrim($redirectBase, '/') . '?' . $query);
+            }
+
+            // Fallback to JSON response if no redirect configured
             return response()->json([
                 'success' => true,
                 'message' => 'Social authentication successful',
@@ -62,6 +76,12 @@ class SocialAuthController extends Controller
             ]);
 
         } catch (\Exception $e) {
+            $errorRedirect = config('services.frontend.social_login_error_redirect_url');
+            if (!empty($errorRedirect)) {
+                $query = http_build_query(['error' => 'social_auth_failed', 'message' => $e->getMessage()]);
+                return redirect()->away(rtrim($errorRedirect, '/') . '?' . $query);
+            }
+
             return response()->json([
                 'success' => false,
                 'message' => 'Social authentication failed: ' . $e->getMessage()

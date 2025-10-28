@@ -49,4 +49,11 @@ return [
         'redirect' => env('APPLE_REDIRECT_URI'),
     ],
 
+    // Frontend/app URL to redirect to after successful social login
+    // Example: https://app.gooddeeds.org/auth/callback or myapp://auth
+    'frontend' => [
+        'social_login_redirect_url' => env('SOCIAL_LOGIN_REDIRECT_URL'),
+        'social_login_error_redirect_url' => env('SOCIAL_LOGIN_ERROR_REDIRECT_URL'),
+    ],
+
 ];
