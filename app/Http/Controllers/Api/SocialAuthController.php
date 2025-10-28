@@ -42,50 +42,22 @@ class SocialAuthController extends Controller
             // Generate token
             $token = $user->createToken('social-auth')->plainTextToken;
 
-            // If frontend redirect URL is configured, redirect with token and next_step
-            $redirectBase = config('services.frontend.social_login_redirect_url');
-            if (!empty($redirectBase)) {
-                $nextStep = $user->is_profile_complete ? 'dashboard' : 'complete_profile';
-                $query = http_build_query([
-                    'token' => $token,
-                    'next_step' => $nextStep,
-                    'provider' => $provider,
-                ]);
-
-                return redirect()->away(rtrim($redirectBase, '/') . '?' . $query);
-            }
-
-            // Fallback to JSON response if no redirect configured
-            return response()->json([
-                'success' => true,
-                'message' => 'Social authentication successful',
-                'data' => [
-                    'user' => [
-                        'id' => $user->id,
-                        'first_name' => $user->first_name,
-                        'last_name' => $user->last_name,
-                        'email' => $user->email,
-                        'role' => $user->role,
-                        'social_provider' => $user->social_provider,
-                        'is_profile_complete' => $user->is_profile_complete,
-                        'social_avatar_url' => $user->social_avatar_url,
-                    ],
-                    'token' => $token,
-                    'next_step' => $user->is_profile_complete ? 'dashboard' : 'complete_profile'
-                ]
+            // Always redirect to frontend with token and next_step
+            $redirectBase = config('services.frontend.social_login_redirect_url', 'gooddeeds://auth/callback');
+            $nextStep = $user->is_profile_complete ? 'dashboard' : 'complete_profile';
+            $query = http_build_query([
+                'token' => $token,
+                'next_step' => $nextStep,
+                'provider' => $provider,
             ]);
 
-        } catch (\Exception $e) {
-            $errorRedirect = config('services.frontend.social_login_error_redirect_url');
-            if (!empty($errorRedirect)) {
-                $query = http_build_query(['error' => 'social_auth_failed', 'message' => $e->getMessage()]);
-                return redirect()->away(rtrim($errorRedirect, '/') . '?' . $query);
-            }
+            return redirect()->away(rtrim($redirectBase, '/') . '?' . $query);
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Social authentication failed: ' . $e->getMessage()
-            ], 400);
+        } catch (\Exception $e) {
+            // Always redirect to frontend with error information
+            $errorRedirect = config('services.frontend.social_login_error_redirect_url', 'gooddeeds://auth/callback');
+            $query = http_build_query(['error' => 'social_auth_failed', 'message' => $e->getMessage()]);
+            return redirect()->away(rtrim($errorRedirect, '/') . '?' . $query);
         }
     }
 
