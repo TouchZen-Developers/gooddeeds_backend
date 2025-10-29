@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\Admin\AffectedEventController;
 use App\Http\Controllers\Api\Admin\BeneficiaryManagementController;
+use App\Http\Controllers\Api\Admin\ProductController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BeneficiaryController;
 use App\Http\Controllers\Api\BeneficiarySignupController;
@@ -71,6 +72,20 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
         Route::get('/{beneficiary}', [BeneficiaryManagementController::class, 'show']);
         Route::post('/{beneficiary}/approve', [BeneficiaryManagementController::class, 'approve']);
         Route::post('/{beneficiary}/reject', [BeneficiaryManagementController::class, 'reject']);
+    });
+    
+    // Product Management
+    Route::prefix('products')->group(function () {
+        Route::get('/', [ProductController::class, 'index']);
+        Route::post('/', [ProductController::class, 'store']);
+        Route::get('/statistics', [ProductController::class, 'statistics']);
+        Route::post('/bulk-import', [ProductController::class, 'bulkImport']);
+        Route::get('/{product}', [ProductController::class, 'show']);
+        Route::put('/{product}', [ProductController::class, 'update']);
+        Route::delete('/{product}', [ProductController::class, 'destroy']);
+        Route::post('/{product}/refresh', [ProductController::class, 'refresh']);
+        Route::post('/{product}/toggle-status', [ProductController::class, 'toggleStatus']);
+        Route::post('/{product}/toggle-featured', [ProductController::class, 'toggleFeatured']);
     });
 });
 

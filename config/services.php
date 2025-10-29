@@ -49,6 +49,13 @@ return [
         'redirect' => env('APPLE_REDIRECT_URI'),
     ],
 
+    // Rainforest API for Amazon product data
+    'rainforest' => [
+        'api_key' => env('RAINFOREST_API_KEY'),
+        'base_url' => env('RAINFOREST_BASE_URL', 'https://api.rainforestapi.com/request'),
+        'timeout' => env('RAINFOREST_TIMEOUT', 30),
+    ],
+
     // Frontend/app URL to redirect to after successful social login
     // Example: https://app.gooddeeds.org/auth/callback or myapp://auth
     'frontend' => [

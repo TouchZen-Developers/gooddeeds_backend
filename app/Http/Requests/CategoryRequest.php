@@ -31,7 +31,6 @@ class CategoryRequest extends FormRequest
                 'max:255',
                 Rule::unique('categories', 'name')->ignore($categoryId),
             ],
-            'total_items' => 'nullable|integer|min:0',
             'icon' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120', // 5MB max
         ];
     }
@@ -45,8 +44,6 @@ class CategoryRequest extends FormRequest
             'name.required' => 'Category name is required.',
             'name.unique' => 'A category with this name already exists.',
             'name.max' => 'Category name must not exceed 255 characters.',
-            'total_items.integer' => 'Total items must be a number.',
-            'total_items.min' => 'Total items must be at least 0.',
             'icon.image' => 'The icon must be an image.',
             'icon.mimes' => 'The icon must be a file of type: jpeg, png, jpg, gif, webp.',
             'icon.max' => 'The icon must not be larger than 5MB.',

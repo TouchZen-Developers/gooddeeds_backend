@@ -16,7 +16,6 @@ class Category extends Model
      */
     protected $fillable = [
         'name',
-        'total_items',
         'icon_url',
     ];
 
@@ -25,9 +24,7 @@ class Category extends Model
      *
      * @var array<string, string>
      */
-    protected $casts = [
-        'total_items' => 'integer',
-    ];
+    protected $casts = [];
 
     /**
      * Get the formatted icon URL
@@ -51,5 +48,34 @@ class Category extends Model
     public function scopeWithoutIcons($query)
     {
         return $query->whereNull('icon_url');
+    }
+
+    /**
+     * Relationship: Category has many Products
+     */
+    public function products()
+    {
+        return $this->hasMany(Product::class);
+    }
+
+    /**
+     * Accessor: Dynamic product count
+     */
+    public function getProductCountAttribute(): int
+    {
+        // If loaded with withCount('products as product_count'), prefer that
+        if (array_key_exists('product_count', $this->attributes)) {
+            return (int) $this->attributes['product_count'];
+        }
+
+        return $this->products()->count();
+    }
+
+    /**
+     * Scope: eager load product count
+     */
+    public function scopeWithProductCount($query)
+    {
+        return $query->withCount('products as product_count');
     }
 }

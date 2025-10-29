@@ -32,12 +32,21 @@ class CategoryController extends Controller
             $query->where('name', 'like', "%{$search}%");
         }
 
-        $categories = $query->orderBy('created_at', 'desc')->paginate($perPage);
+        $categories = $query->withProductCount()->orderBy('created_at', 'desc')->paginate($perPage);
 
         return response()->json([
             'success' => true,
             'data' => [
-                'categories' => $categories->items(),
+                'categories' => collect($categories->items())->map(function ($category) {
+                    return [
+                        'id' => $category->id,
+                        'name' => $category->name,
+                        'product_count' => $category->product_count,
+                        'icon_url' => $category->icon_url,
+                        'created_at' => $category->created_at,
+                        'updated_at' => $category->updated_at,
+                    ];
+                }),
                 'pagination' => [
                     'current_page' => $categories->currentPage(),
                     'last_page' => $categories->lastPage(),
@@ -88,10 +97,19 @@ class CategoryController extends Controller
      */
     public function show(Category $category): JsonResponse
     {
+        $category->loadMissing('products');
+
         return response()->json([
             'success' => true,
             'data' => [
-                'category' => $category,
+                'category' => [
+                    'id' => $category->id,
+                    'name' => $category->name,
+                    'product_count' => $category->product_count,
+                    'icon_url' => $category->icon_url,
+                    'created_at' => $category->created_at,
+                    'updated_at' => $category->updated_at,
+                ],
             ],
         ], 200);
     }
@@ -127,11 +145,20 @@ class CategoryController extends Controller
 
         $category->update($data);
 
+        $fresh = $category->fresh()->loadMissing('products');
+
         return response()->json([
             'success' => true,
             'message' => 'Category updated successfully',
             'data' => [
-                'category' => $category->fresh(),
+                'category' => [
+                    'id' => $fresh->id,
+                    'name' => $fresh->name,
+                    'product_count' => $fresh->product_count,
+                    'icon_url' => $fresh->icon_url,
+                    'created_at' => $fresh->created_at,
+                    'updated_at' => $fresh->updated_at,
+                ],
             ],
         ], 200);
     }
