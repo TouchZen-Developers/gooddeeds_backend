@@ -16,32 +16,26 @@ class CategorySeeder extends Seeder
         $categories = [
             [
                 'name' => 'Medical',
-                'total_items' => 8,
                 'icon_url' => null, // Will be uploaded via API
             ],
             [
                 'name' => 'School',
-                'total_items' => 12,
                 'icon_url' => null, // Will be uploaded via API
             ],
             [
                 'name' => 'Food',
-                'total_items' => 4,
                 'icon_url' => null, // Will be uploaded via API
             ],
             [
                 'name' => 'Clothing',
-                'total_items' => 15,
                 'icon_url' => null,
             ],
             [
                 'name' => 'Electronics',
-                'total_items' => 6,
                 'icon_url' => null,
             ],
             [
                 'name' => 'Books',
-                'total_items' => 20,
                 'icon_url' => null,
             ],
         ];
