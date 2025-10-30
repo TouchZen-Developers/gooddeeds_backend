@@ -179,9 +179,21 @@ class SocialAuthController extends Controller
         }
 
         // Create new user
+        $fullName = trim($socialUser->getName() ?? '');
+        $firstName = $fullName !== '' ? explode(' ', $fullName)[0] : null;
+        $lastName = $fullName !== '' ? trim(implode(' ', array_slice(explode(' ', $fullName), 1))) : null;
+        if (!$firstName) {
+            $firstName = 'Social';
+        }
+        if ($lastName === '' || $lastName === null) {
+            $lastName = 'User';
+        }
+        $name = trim($firstName . ' ' . $lastName);
+
         $user = User::create([
-            'first_name' => $socialUser->getName() ? explode(' ', $socialUser->getName())[0] : 'Social',
-            'last_name' => $socialUser->getName() ? implode(' ', array_slice(explode(' ', $socialUser->getName()), 1)) : 'User',
+            'name' => $name,
+            'first_name' => $firstName,
+            'last_name' => $lastName,
             'email' => $socialUser->getEmail(),
             'password' => Hash::make(Str::random(32)), // Random password for social users
             'role' => User::ROLE_DONOR, // Default to donor for social signup
