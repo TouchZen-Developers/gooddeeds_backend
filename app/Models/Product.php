@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Product extends Model
@@ -76,6 +77,16 @@ class Product extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
+    }
+
+    /**
+     * Get the beneficiaries who need this product.
+     */
+    public function beneficiariesWhoNeed(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'beneficiary_desired_items', 'product_id', 'beneficiary_id')
+                    ->withPivot('quantity')
+                    ->withTimestamps();
     }
 
     /**

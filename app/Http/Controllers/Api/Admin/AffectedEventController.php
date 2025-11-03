@@ -8,6 +8,7 @@ use App\Models\AffectedEvent;
 use App\Services\FileUploadService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class AffectedEventController extends Controller
 {
@@ -174,7 +175,7 @@ class AffectedEventController extends Controller
                 $this->fileUploadService->deleteFromS3($affectedEvent->image_url);
             } catch (\Exception $e) {
                 // Log error but don't fail the deletion
-                \Log::warning('Failed to delete image from S3: ' . $e->getMessage());
+                Log::warning('Failed to delete image from S3: ' . $e->getMessage());
             }
         }
 
@@ -183,6 +184,26 @@ class AffectedEventController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Affected event deleted successfully.',
+        ]);
+    }
+
+    /**
+     * Get recent/featured affected events (public, no authentication required)
+     */
+    public function recent(Request $request): JsonResponse
+    {
+        $limit = $request->get('limit', 10);
+        $limit = min($limit, 50); // Max 50
+
+        $events = AffectedEvent::active()
+            ->orderByDesc('is_featured')
+            ->orderByDesc('created_at')
+            ->limit($limit)
+            ->get(['id', 'name', 'image_url', 'is_featured']);
+
+        return response()->json([
+            'success' => true,
+            'data' => $events,
         ]);
     }
 }

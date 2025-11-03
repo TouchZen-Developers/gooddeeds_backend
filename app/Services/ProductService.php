@@ -220,15 +220,26 @@ class ProductService
         
         $productData = $data['product'];
         
+        // Extract price from buybox_winner (Rainforest API structure)
+        $price = null;
+        $currency = 'USD';
+        if (isset($productData['buybox_winner']['price'])) {
+            $priceData = $productData['buybox_winner']['price'];
+            $price = $priceData['value'] ?? $this->parsePrice($priceData['raw'] ?? null);
+            $currency = $priceData['currency'] ?? 'USD';
+        } elseif (isset($productData['price'])) {
+            $price = $this->parsePrice($productData['price']);
+        }
+        
         return [
             'title' => $productData['title'] ?? null,
             'description' => $productData['description'] ?? null,
-            'price' => $this->parsePrice($productData['price'] ?? null),
-            'currency' => $productData['currency'] ?? 'USD',
+            'price' => $price,
+            'currency' => $currency,
             'image_url' => $this->extractImageUrl($productData['main_image'] ?? null),
             'features' => $productData['feature_bullets'] ?? null,
             'specifications' => $productData['specifications'] ?? null,
-            'availability' => $productData['availability'] ?? null,
+            'availability' => $productData['buybox_winner']['availability']['raw'] ?? $productData['availability'] ?? null,
             'rating' => $productData['rating'] ?? null,
             'review_count' => $productData['reviews_total'] ?? null,
             'brand' => $productData['brand'] ?? null,

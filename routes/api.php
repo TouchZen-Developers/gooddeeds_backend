@@ -6,7 +6,9 @@ use App\Http\Controllers\Api\Admin\ProductController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BeneficiaryController;
 use App\Http\Controllers\Api\BeneficiarySignupController;
+use App\Http\Controllers\Api\Beneficiary\DesiredItemController;
 use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\Donor\HomeController as DonorHomeController;
 use App\Http\Controllers\Api\ForgotPasswordController;
 use App\Http\Controllers\Api\SignupController;
 use App\Http\Controllers\Api\SocialAuthController;
@@ -56,6 +58,26 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/beneficiaries/status', [BeneficiaryController::class, 'getStatus']);
 });
 
+// Beneficiary-only routes (requires beneficiary role)
+Route::middleware(['auth:sanctum', 'beneficiary'])->prefix('beneficiary')->group(function () {
+    // Product Catalog (browse available products)
+    Route::get('/catalog', [DesiredItemController::class, 'catalog']);
+    
+    // Desired Items Management
+    Route::prefix('desired-items')->group(function () {
+        Route::get('/', [DesiredItemController::class, 'index']);
+        Route::post('/', [DesiredItemController::class, 'store']);
+        Route::put('/{product}', [DesiredItemController::class, 'update']);
+        Route::delete('/{product}', [DesiredItemController::class, 'destroy']);
+    });
+});
+
+// Donor-only routes (requires donor role)
+Route::middleware(['auth:sanctum', 'donor'])->prefix('donor')->group(function () {
+    // Donor Home (recent events, nearby families, recently affected)
+    Route::get('/home', [DonorHomeController::class, 'index']);
+});
+
 // Admin-only routes (requires admin role)
 Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function () {
     // Categories
@@ -89,7 +111,11 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
     });
 });
 
-// Public API routes
+// Public API routes (no authentication required)
+Route::get('/events/recent', [AffectedEventController::class, 'recent']);
+Route::get('/categories', [CategoryController::class, 'publicIndex']);
+
+// Legacy public routes
 Route::get('/affected-events', function () {
     $affectedEvents = \App\Models\AffectedEvent::active()->ordered()->get(['id', 'name']);
     

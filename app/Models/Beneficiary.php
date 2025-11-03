@@ -22,6 +22,8 @@ class Beneficiary extends Model
         'city',
         'state',
         'zip_code',
+        'latitude',
+        'longitude',
         'affected_event',
         'statement',
         'family_photo_url',
@@ -29,6 +31,8 @@ class Beneficiary extends Model
 
     protected $casts = [
         'processed_at' => 'datetime',
+        'latitude' => 'decimal:8',
+        'longitude' => 'decimal:8',
     ];
 
     /**
@@ -107,5 +111,69 @@ class Beneficiary extends Model
             'status' => self::STATUS_REJECTED,
             'processed_at' => now(),
         ]);
+    }
+
+    /**
+     * Scope a query to only include beneficiaries near a location
+     * Uses Haversine formula to calculate distance in miles
+     */
+    public function scopeNearby(Builder $query, float $latitude, float $longitude, float $radiusMiles = 50): Builder
+    {
+        // Haversine formula to calculate distance in miles
+        // 3959 is Earth's radius in miles
+        // Use whereRaw with the full calculation instead of HAVING with alias
+        return $query->selectRaw("
+                *,
+                (
+                    3959 * acos(
+                        cos(radians(?))
+                        * cos(radians(latitude))
+                        * cos(radians(longitude) - radians(?))
+                        + sin(radians(?))
+                        * sin(radians(latitude))
+                    )
+                ) AS distance_miles
+            ", [$latitude, $longitude, $latitude])
+            ->whereNotNull('latitude')
+            ->whereNotNull('longitude')
+            ->whereRaw("
+                (
+                    3959 * acos(
+                        cos(radians(?))
+                        * cos(radians(latitude))
+                        * cos(radians(longitude) - radians(?))
+                        + sin(radians(?))
+                        * sin(radians(latitude))
+                    )
+                ) <= ?
+            ", [$latitude, $longitude, $latitude, $radiusMiles])
+            ->orderByRaw("
+                (
+                    3959 * acos(
+                        cos(radians(?))
+                        * cos(radians(latitude))
+                        * cos(radians(longitude) - radians(?))
+                        + sin(radians(?))
+                        * sin(radians(latitude))
+                    )
+                ) ASC
+            ", [$latitude, $longitude, $latitude]);
+    }
+
+    /**
+     * Get formatted location string (City, State)
+     */
+    public function getLocationStringAttribute(): string
+    {
+        $parts = array_filter([$this->city, $this->state]);
+        return implode(', ', $parts) ?: 'Location not specified';
+    }
+
+    /**
+     * Check if beneficiary has location data
+     */
+    public function hasLocation(): bool
+    {
+        return !is_null($this->latitude) && !is_null($this->longitude);
     }
 }

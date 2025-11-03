@@ -212,4 +212,17 @@ class CategoryController extends Controller
             ],
         ], 200);
     }
+
+    /**
+     * Get public categories list (no authentication required)
+     */
+    public function publicIndex(): JsonResponse
+    {
+        $categories = Category::orderBy('name', 'asc')->get(['id', 'name', 'icon_url']);
+
+        return response()->json([
+            'success' => true,
+            'data' => $categories,
+        ]);
+    }
 }

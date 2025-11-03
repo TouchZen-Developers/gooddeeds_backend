@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -103,6 +104,16 @@ class User extends Authenticatable
     public function beneficiary(): HasOne
     {
         return $this->hasOne(Beneficiary::class);
+    }
+
+    /**
+     * Get the desired items (products) for this beneficiary
+     */
+    public function desiredItems(): BelongsToMany
+    {
+        return $this->belongsToMany(Product::class, 'beneficiary_desired_items', 'beneficiary_id', 'product_id')
+                    ->withPivot('quantity')
+                    ->withTimestamps();
     }
 
     /**
