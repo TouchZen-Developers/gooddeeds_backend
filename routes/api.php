@@ -60,6 +60,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
 // Beneficiary-only routes (requires beneficiary role)
 Route::middleware(['auth:sanctum', 'beneficiary'])->prefix('beneficiary')->group(function () {
+    // Location Management
+    Route::post('/location', [\App\Http\Controllers\Api\Beneficiary\LocationController::class, 'updateLocation']);
+    
     // Product Catalog (browse available products)
     Route::get('/catalog', [DesiredItemController::class, 'catalog']);
     
