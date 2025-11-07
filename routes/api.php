@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\Admin\AffectedEventController;
 use App\Http\Controllers\Api\Admin\BeneficiaryManagementController;
 use App\Http\Controllers\Api\Admin\ProductController;
+use App\Http\Controllers\Api\Admin\UserManagementController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BeneficiaryController;
 use App\Http\Controllers\Api\BeneficiarySignupController;
@@ -21,6 +22,7 @@ Route::post('/login', [AuthController::class, 'login']);
 // Signup Routes (public)
 Route::post('/auth/signup', [SignupController::class, 'signup']);
 Route::post('/auth/signup/verify-otp', [SignupController::class, 'verifyOtp']);
+Route::post('/auth/signup/resend-otp', [SignupController::class, 'resendOtp']);
 
 // Beneficiary Signup Routes (public) - verify uses unified controller
 Route::post('/auth/beneficiaries/signup', [BeneficiarySignupController::class, 'signup']);
@@ -112,6 +114,9 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
         Route::post('/{product}/toggle-status', [ProductController::class, 'toggleStatus']);
         Route::post('/{product}/toggle-featured', [ProductController::class, 'toggleFeatured']);
     });
+    
+    // User Management
+    Route::delete('/users/delete-by-email', [UserManagementController::class, 'deleteByEmail']);
 });
 
 // Public API routes (no authentication required)

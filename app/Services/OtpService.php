@@ -417,4 +417,101 @@ class OtpService
             ],
         ];
     }
+
+    /**
+     * Resend OTP for signup (both donor and beneficiary)
+     * Uses stored metadata from the most recent OTP record
+     */
+    public function resendSignupOtp(string $email): array
+    {
+        // Clean up expired OTPs
+        $this->cleanupExpiredOtps($email);
+
+        // Check for existing valid OTP (rate limiting - 1 minute cooldown)
+        $validOtp = Otp::where('email', $email)
+            ->whereIn('context', ['signup', 'signup_beneficiary'])
+            ->valid()
+            ->first();
+
+        // Variables to store context and metadata
+        $context = null;
+        $metadata = null;
+
+        if ($validOtp) {
+            // Check if 1 minute has passed since OTP was created
+            $createdAt = $validOtp->created_at;
+            $cooldownSeconds = 60; // 1 minute cooldown
+            $secondsSinceCreation = $createdAt->diffInSeconds(now(), false);
+
+            if ($secondsSinceCreation < $cooldownSeconds) {
+                $remainingSeconds = (int) ceil($cooldownSeconds - $secondsSinceCreation);
+                return [
+                    'success' => false,
+                    'message' => "Please wait {$remainingSeconds} seconds before requesting another OTP.",
+                ];
+            }
+
+            // Cooldown period has passed, extract data before deleting
+            $context = $validOtp->context;
+            $metadata = $validOtp->metadata;
+            
+            // Delete the old OTP
+            $validOtp->delete();
+        }
+
+        // If we didn't get context and metadata from valid OTP, find from previous records
+        if (!$context || !$metadata) {
+            $previousOtp = Otp::where('email', $email)
+                ->whereIn('context', ['signup', 'signup_beneficiary'])
+                ->whereNotNull('metadata')
+                ->orderByDesc('created_at')
+                ->first();
+
+            if (!$previousOtp) {
+                return [
+                    'success' => false,
+                    'message' => 'No signup request found for this email. Please complete the signup form first.',
+                ];
+            }
+
+            // Extract context and metadata from previous OTP
+            $context = $previousOtp->context;
+            $metadata = $previousOtp->metadata;
+        }
+
+        // Generate new OTP
+        $otp = $this->generateSignupOtp();
+        $expiresAt = now()->addMinutes(10);
+
+        // Create new OTP record with same metadata
+        Otp::create([
+            'email' => $email,
+            'otp' => $otp,
+            'context' => $context,
+            'metadata' => $metadata,
+            'expires_at' => $expiresAt,
+            'is_used' => false,
+        ]);
+
+        try {
+            // Send OTP via email
+            Mail::to($email)->send(new SignupOtpMail($otp, $email));
+
+            return [
+                'success' => true,
+                'message' => 'OTP has been resent to your email address successfully.',
+            ];
+        } catch (\Exception $e) {
+            // If email fails, remove the OTP from database
+            Otp::where('email', $email)
+                ->where('otp', $otp)
+                ->forContext($context)
+                ->delete();
+
+            return [
+                'success' => false,
+                'message' => 'Failed to resend OTP. Please try again later.',
+            ];
+        }
+    }
 }

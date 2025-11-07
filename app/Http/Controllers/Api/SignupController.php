@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ResendSignupOtpRequest;
 use App\Http\Requests\SignupRequest;
 use App\Http\Requests\SignupVerifyOtpRequest;
 use App\Models\User;
@@ -51,6 +52,19 @@ class SignupController extends Controller
         $result = $this->otpService->verifyOtpAndCreateAccount($data['email'], $data['otp']);
 
         $statusCode = $result['success'] ? 201 : 400;
+        return response()->json($result, $statusCode);
+    }
+
+    /**
+     * Resend OTP for signup (both donor and beneficiary)
+     */
+    public function resendOtp(ResendSignupOtpRequest $request): JsonResponse
+    {
+        $data = $request->validated();
+        
+        $result = $this->otpService->resendSignupOtp($data['email']);
+        
+        $statusCode = $result['success'] ? 200 : 400;
         return response()->json($result, $statusCode);
     }
 }
