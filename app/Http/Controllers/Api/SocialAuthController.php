@@ -152,15 +152,26 @@ class SocialAuthController extends Controller
             'provider' => 'required|string|in:google,apple',
             'id_token' => 'required|string',
             'role' => 'nullable|string|in:donor,beneficiary',
+            'first_name' => 'nullable|string|max:100',
+            'last_name' => 'nullable|string|max:100',
         ]);
 
         try {
             $provider = $request->provider;
             $idToken = $request->id_token;
             $role = $request->role ?? 'donor'; // Default to donor if not specified
+            $firstName = $request->first_name;
+            $lastName = $request->last_name;
 
             // Validate ID token with provider
             $socialUser = $this->validateIdToken($provider, $idToken);
+
+            // Override social user name with provided names if available
+            if ($firstName || $lastName) {
+                $socialUser->name = trim(($firstName ?? '') . ' ' . ($lastName ?? ''));
+                $socialUser->first_name = $firstName;
+                $socialUser->last_name = $lastName;
+            }
 
             // Find or create user with specified role
             $user = $this->findOrCreateUserWithRole($socialUser, $provider, $role);
@@ -259,15 +270,32 @@ class SocialAuthController extends Controller
         }
 
         // Create new user with specified role
-        $fullName = trim($socialUserName ?? '');
-        $firstName = $fullName !== '' ? explode(' ', $fullName)[0] : null;
-        $lastName = $fullName !== '' ? trim(implode(' ', array_slice(explode(' ', $fullName), 1))) : null;
+        // Use provided names from request if available, otherwise parse from social user name
+        $firstName = isset($socialUser->first_name) && $socialUser->first_name 
+            ? $socialUser->first_name 
+            : null;
+        $lastName = isset($socialUser->last_name) && $socialUser->last_name 
+            ? $socialUser->last_name 
+            : null;
+
+        // If names weren't provided, try to parse from social provider's name
+        if (!$firstName && !$lastName) {
+            $fullName = trim($socialUserName ?? '');
+            if ($fullName !== '') {
+                $nameParts = explode(' ', $fullName);
+                $firstName = $nameParts[0];
+                $lastName = count($nameParts) > 1 ? trim(implode(' ', array_slice($nameParts, 1))) : null;
+            }
+        }
+
+        // Final fallback if still no name
         if (!$firstName) {
             $firstName = 'Social';
         }
-        if ($lastName === '' || $lastName === null) {
+        if (!$lastName || $lastName === '') {
             $lastName = 'User';
         }
+        
         $name = trim($firstName . ' ' . $lastName);
 
         $user = User::create([
