@@ -36,6 +36,10 @@ Route::prefix('forgot-password')->group(function () {
 });
 
 // Social Authentication Routes (public)
+// Mobile app token-based authentication
+Route::post('/auth/social/token', [SocialAuthController::class, 'authenticateWithToken']);
+
+// Web-based OAuth redirect flow
 Route::prefix('auth/social')->middleware('web')->group(function () {
     // Redirect to social provider
     Route::get('/{provider}/redirect', [SocialAuthController::class, 'redirect'])
