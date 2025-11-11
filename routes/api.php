@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\BeneficiarySignupController;
 use App\Http\Controllers\Api\Beneficiary\DesiredItemController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\Donor\HomeController as DonorHomeController;
+use App\Http\Controllers\Api\Donor\EventController as DonorEventController;
 use App\Http\Controllers\Api\ForgotPasswordController;
 use App\Http\Controllers\Api\SignupController;
 use App\Http\Controllers\Api\SocialAuthController;
@@ -85,6 +86,10 @@ Route::middleware(['auth:sanctum', 'beneficiary'])->prefix('beneficiary')->group
 Route::middleware(['auth:sanctum', 'donor'])->prefix('donor')->group(function () {
     // Donor Home (recent events, nearby families, recently affected)
     Route::get('/home', [DonorHomeController::class, 'index']);
+    
+    // Event Management
+    Route::get('/events', [DonorEventController::class, 'index']);
+    Route::get('/events/{event}', [DonorEventController::class, 'show']);
 });
 
 // Admin-only routes (requires admin role)
@@ -100,6 +105,7 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
     Route::prefix('beneficiaries')->group(function () {
         Route::get('/', [BeneficiaryManagementController::class, 'index']);
         Route::get('/statistics', [BeneficiaryManagementController::class, 'statistics']);
+        Route::get('/export', [BeneficiaryManagementController::class, 'export']);
         Route::get('/{beneficiary}', [BeneficiaryManagementController::class, 'show']);
         Route::post('/{beneficiary}/approve', [BeneficiaryManagementController::class, 'approve']);
         Route::post('/{beneficiary}/reject', [BeneficiaryManagementController::class, 'reject']);

@@ -139,4 +139,94 @@ class BeneficiaryManagementController extends Controller
             'data' => $stats,
         ]);
     }
+
+    /**
+     * Export all beneficiaries to CSV
+     */
+    public function export(Request $request)
+    {
+        // Get all beneficiaries with user information
+        $query = Beneficiary::with('user:id,first_name,last_name,email,phone_number,created_at');
+
+        // Apply optional status filter
+        if ($request->has('status') && in_array($request->input('status'), ['pending', 'approved', 'rejected'])) {
+            $query->where('status', $request->input('status'));
+        }
+
+        $beneficiaries = $query->orderBy('created_at', 'desc')->get();
+
+        // Define CSV headers
+        $headers = [
+            'ID',
+            'First Name',
+            'Last Name',
+            'Email',
+            'Phone Number',
+            'Status',
+            'Family Size',
+            'Address',
+            'City',
+            'State',
+            'Zip Code',
+            'Latitude',
+            'Longitude',
+            'Affected Event',
+            'Statement',
+            'Family Photo URL',
+            'Processed At',
+            'Registered At',
+        ];
+
+        // Generate CSV content
+        $callback = function() use ($beneficiaries, $headers) {
+            $file = fopen('php://output', 'w');
+            
+            // Write BOM for UTF-8 Excel compatibility
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+            
+            // Write headers
+            fputcsv($file, $headers);
+
+            // Write data rows
+            foreach ($beneficiaries as $beneficiary) {
+                $row = [
+                    $beneficiary->id,
+                    $beneficiary->user->first_name ?? '',
+                    $beneficiary->user->last_name ?? '',
+                    $beneficiary->user->email ?? '',
+                    $beneficiary->user->phone_number ?? '',
+                    ucfirst($beneficiary->status),
+                    $beneficiary->family_size ?? '',
+                    $beneficiary->address ?? '',
+                    $beneficiary->city ?? '',
+                    $beneficiary->state ?? '',
+                    $beneficiary->zip_code ?? '',
+                    $beneficiary->latitude ?? '',
+                    $beneficiary->longitude ?? '',
+                    $beneficiary->affected_event ?? '',
+                    $beneficiary->statement ?? '',
+                    $beneficiary->family_photo_url ?? '',
+                    $beneficiary->processed_at ? $beneficiary->processed_at->format('Y-m-d H:i:s') : '',
+                    $beneficiary->user->created_at ? $beneficiary->user->created_at->format('Y-m-d H:i:s') : '',
+                ];
+                
+                fputcsv($file, $row);
+            }
+
+            fclose($file);
+        };
+
+        // Generate filename with timestamp
+        $timestamp = now()->format('Y-m-d_His');
+        $filename = "beneficiaries_export_{$timestamp}.csv";
+
+        // Return streaming response
+        return response()->stream($callback, 200, [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+            'Cache-Control' => 'no-cache, no-store, must-revalidate',
+            'Pragma' => 'no-cache',
+            'Expires' => '0',
+        ]);
+    }
 }
