@@ -66,16 +66,88 @@ class AuthController extends Controller
      */
     public function me(Request $request)
     {
+        $user = $request->user()->loadMissing(['beneficiary']);
+
+        $userData = [
+            'id' => $user->id,
+            'name' => $user->name,
+            'first_name' => $user->first_name,
+            'last_name' => $user->last_name,
+            'email' => $user->email,
+            'phone_number' => $user->phone_number,
+            'role' => $user->role,
+            'social_provider' => $user->social_provider,
+            'is_social_user' => $user->isSocialUser(),
+            'created_at' => $user->created_at?->toISOString(),
+            'updated_at' => $user->updated_at?->toISOString(),
+        ];
+
+        $beneficiaryProfile = null;
+
+        if ($user->isBeneficiary() && $user->beneficiary) {
+            $beneficiary = $user->beneficiary;
+
+            $beneficiaryProfile = [
+                'id' => $beneficiary->id,
+                'status' => $beneficiary->status,
+                'is_approved' => $beneficiary->isApproved(),
+                'processed_at' => $beneficiary->processed_at?->toISOString(),
+                'family_size' => $beneficiary->family_size,
+                'address' => $beneficiary->address,
+                'city' => $beneficiary->city,
+                'state' => $beneficiary->state,
+                'zip_code' => $beneficiary->zip_code,
+                'latitude' => $beneficiary->latitude,
+                'longitude' => $beneficiary->longitude,
+                'affected_event' => $beneficiary->affected_event,
+                'statement' => $beneficiary->statement,
+                'family_photo_url' => $beneficiary->family_photo_url,
+                'location' => $beneficiary->location_string,
+                'has_location' => $beneficiary->hasLocation(),
+            ];
+        }
+
         return response()->json([
             'success' => true,
             'data' => [
-                'user' => [
-                    'id' => $request->user()->id,
-                    'name' => $request->user()->name,
-                    'email' => $request->user()->email,
-                    'role' => $request->user()->role,
-                ],
+                'user' => array_merge($userData, [
+                    'beneficiary_profile' => $beneficiaryProfile
+                ]),
             ],
         ], 200);
+    }
+
+    /**
+     * Format the authenticated user's desired items grouped by category.
+     */
+    private function formatDesiredItemsByCategory(User $user): array
+    {
+        $desiredItems = $user->desiredItems()
+            ->with('category:id,name,icon_url')
+            ->active()
+            ->get();
+
+        if ($desiredItems->isEmpty()) {
+            return [];
+        }
+
+        return $desiredItems->groupBy('category_id')->map(function ($items, $categoryId) {
+            $category = $items->first()->category;
+
+            return [
+                'id' => $category?->id ?? (int) $categoryId,
+                'category_id' => $category?->id ?? (int) $categoryId,
+                'icon' => $category?->icon_url,
+                'name' => $category?->name ?? 'Uncategorized',
+                'items' => $items->map(function ($product) {
+                    return [
+                        'id' => $product->id,
+                        'image' => $product->image_url,
+                        'name' => $product->title,
+                        'count' => $product->pivot->quantity ?? 1,
+                    ];
+                })->values()->toArray(),
+            ];
+        })->values()->toArray();
     }
 }
