@@ -36,6 +36,7 @@ class BeneficiarySignupRequest extends FormRequest
             'affected_event' => 'nullable|string|max:255',
             'statement' => 'nullable|string|max:2000',
             'family_photo' => 'nullable|image|mimes:jpeg,png,jpg,webp,gif|max:5120', // 5MB max
+            'identity_proof' => 'nullable|image|mimes:jpeg,png,jpg,webp,pdf|max:5120', // 5MB max
         ];
     }
 
@@ -58,6 +59,9 @@ class BeneficiarySignupRequest extends FormRequest
             'family_photo.image' => 'Family photo must be an image file.',
             'family_photo.mimes' => 'Family photo must be a JPEG, PNG, JPG, WebP, or GIF file.',
             'family_photo.max' => 'Family photo must not be larger than 5MB.',
+            'identity_proof.image' => 'Identity proof must be an image or PDF file.',
+            'identity_proof.mimes' => 'Identity proof must be a JPEG, PNG, JPG, WebP, or PDF file.',
+            'identity_proof.max' => 'Identity proof must not be larger than 5MB.',
             'statement.max' => 'Statement must not exceed 2000 characters.',
         ];
     }

@@ -384,6 +384,7 @@ class OtpService
             'affected_event' => $metadata['affected_event'] ?? null,
             'statement' => $metadata['statement'] ?? null,
             'family_photo_url' => $metadata['family_photo_url'] ?? null,
+            'identity_proof' => $metadata['identity_proof'] ?? null,
         ]);
 
         // Mark OTP as used and cleanup
@@ -413,6 +414,7 @@ class OtpService
                     'affected_event' => $beneficiary->affected_event,
                     'statement' => $beneficiary->statement,
                     'family_photo_url' => $beneficiary->family_photo_url,
+                    'identity_proof' => $beneficiary->identity_proof,
                 ],
             ],
         ];

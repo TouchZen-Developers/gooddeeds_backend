@@ -27,6 +27,7 @@ class Beneficiary extends Model
         'affected_event',
         'statement',
         'family_photo_url',
+        'identity_proof',
     ];
 
     protected $casts = [

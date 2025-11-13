@@ -56,6 +56,32 @@ class BeneficiarySignupController extends Controller
             }
         }
 
+        // Handle identity proof upload if present
+        $identityProofUrl = null;
+        if ($request->hasFile('identity_proof')) {
+            try {
+                // Validate the file first
+                $validationErrors = $this->fileUploadService->validateImage($request->file('identity_proof'));
+                if (!empty($validationErrors)) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Identity proof validation failed: ' . implode(', ', $validationErrors)
+                    ], 400);
+                }
+
+                // Upload to S3
+                $identityProofUrl = $this->fileUploadService->uploadToS3(
+                    $request->file('identity_proof'),
+                    'beneficiaries/identity-proofs'
+                );
+            } catch (\Exception $e) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to upload identity proof: ' . $e->getMessage()
+                ], 400);
+            }
+        }
+
         // Hash password and prepare metadata with all user data
         $hashedPassword = Hash::make($data['password']);
         $userData = [
@@ -76,6 +102,7 @@ class BeneficiarySignupController extends Controller
             'affected_event' => $data['affected_event'] ?? null,
             'statement' => $data['statement'] ?? null,
             'family_photo_url' => $familyPhotoUrl,
+            'identity_proof' => $identityProofUrl,
         ];
 
         // Combine user and beneficiary data for OTP metadata

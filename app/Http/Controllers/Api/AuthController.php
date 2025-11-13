@@ -102,6 +102,7 @@ class AuthController extends Controller
                 'affected_event' => $beneficiary->affected_event,
                 'statement' => $beneficiary->statement,
                 'family_photo_url' => $beneficiary->family_photo_url,
+                'identity_proof' => $beneficiary->identity_proof,
                 'location' => $beneficiary->location_string,
                 'has_location' => $beneficiary->hasLocation(),
             ];
